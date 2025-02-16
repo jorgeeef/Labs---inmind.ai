@@ -1,38 +1,38 @@
-CREATE DATABASE LibraryDB;
-USE LibraryDB;
+create database LibraryDB;
+use LibraryDB;
 
-CREATE TABLE Authors (
-    author_id INT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(255) NOT NULL,
-    birth_date DATE,
-    country VARCHAR(100)
+create table Authors (
+    author_id int primary key auto_increment,
+    name varchar(255) not null,
+    birth_date date,
+    country varchar(100)
 );
 
-CREATE TABLE Books (
-    book_id INT PRIMARY KEY AUTO_INCREMENT,
-    title VARCHAR(255) NOT NULL,
-    author_id INT,
-    isbn VARCHAR(20) UNIQUE,
-    published_year YEAR,
-    FOREIGN KEY (author_id) REFERENCES Authors(author_id) ON DELETE CASCADE
+create table Books (
+    book_id int primary key auto_increment,
+    title varchar(255) not null,
+    author_id int,
+    isbn varchar(20),
+    published_year year,
+    foreign key (author_id) references Authors(author_id) on delete cascade
 );
 
-CREATE TABLE Borrowers (
-    borrower_id INT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(255) NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    phone VARCHAR(15) UNIQUE
+create table Borrowers (
+    borrower_id int primary key auto_increment,
+    name varchar(255) not null,
+    email varchar255) unique not null,
+    phone varchar(15) unique
 );
 
-CREATE TABLE Loans (
-    loan_id INT PRIMARY KEY AUTO_INCREMENT,
-    book_id INT,
-    borrower_id INT,
-    loan_date DATE NOT NULL,
-    return_date DATE NOT NULL,
-    returned BOOLEAN DEFAULT FALSE,
-    FOREIGN KEY (book_id) REFERENCES Books(book_id) ON DELETE CASCADE,
-    FOREIGN KEY (borrower_id) REFERENCES Borrowers(borrower_id) ON DELETE CASCADE
+create table Loans (
+    loan_id int primary key auto_increment,
+    book_id int,
+    borrower_id int,
+    loan_date DATE not null,
+    return_date DATE not null,
+    returned boolean default false,
+    foreign key (book_id) references Books(book_id) on delete cascade,
+    foreign key (borrower_id) references Borrowers(borrower_id) on delete cascade
 );
 
 INSERT INTO Authors (name, birth_date, country) VALUES 
@@ -50,32 +50,31 @@ INSERT INTO Loans (book_id, borrower_id, loan_date, return_date, returned) VALUE
 (1, 1, '2024-01-01', '2024-01-15', FALSE),
 (2, 2, '2024-02-01', '2024-02-14', TRUE);
 
-SELECT * FROM Books WHERE published_year = 1997;
+select * from Books where published_year = 1997;
 
-SELECT * FROM Loans WHERE return_date < CURDATE() AND returned = FALSE;
+select * from Loans where returned = false or return_date > loan_date;
 
-SELECT Books.* 
-FROM Books 
-JOIN Loans ON Books.book_id = Loans.book_id
-JOIN Borrowers ON Loans.borrower_id = Borrowers.borrower_id
-WHERE Borrowers.name = 'Alice Johnson';
+select Books.* 
+from Books 
+join Loans on Books.book_id = Loans.book_id
+join Borrowers on Loans.borrower_id = Borrowers.borrower_id
+where Borrowers.name = 'Alice Johnson';
 
-SELECT COUNT(*) FROM Books;
+select count(*) from Books;
 
-CREATE VIEW PopularBooks AS
-SELECT Books.book_id, Books.title, COUNT(Loans.loan_id) AS total_loans
-FROM Books
-JOIN Loans ON Books.book_id = Loans.book_id
-GROUP BY Books.book_id, Books.title
-ORDER BY total_loans DESC;
-SELECT * FROM PopularBooks;
+create vuew PopularBooks as
+select Books.book_id, Books.title, COUNT(Loans.loan_id) as total_loans
+from Books
+join Loans on Books.book_id = Loans.book_id
+group by Books.book_id, Books.title
+order by total_loans desc;
+select *from PopularBooks;
 
-CREATE PROCEDURE BorrowBook(IN p_book_id INT, IN p_borrower_id INT, IN p_return_date DATE)
+create procedure BorrowBook(IN p_book_id INT, IN p_borrower_id INT, IN p_return_date DATE)
 BEGIN
-    INSERT INTO Loans (book_id, borrower_id, loan_date, return_date, returned)
-    VALUES (p_book_id, p_borrower_id, CURDATE(), p_return_date, FALSE);
+    insert into Loans (book_id, borrower_id, loan_date, return_date, returned)
+    values (p_book_id, p_borrower_id, CURDATE(), p_return_date, false);
 END 
-DELIMITER ;
 BorrowBook(1, 1, '2024-03-01');
 
 
