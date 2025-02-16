@@ -70,12 +70,11 @@ GROUP BY Books.book_id, Books.title
 ORDER BY total_loans DESC;
 SELECT * FROM PopularBooks;
 
-DELIMITER //
 CREATE PROCEDURE BorrowBook(IN p_book_id INT, IN p_borrower_id INT, IN p_return_date DATE)
 BEGIN
     INSERT INTO Loans (book_id, borrower_id, loan_date, return_date, returned)
     VALUES (p_book_id, p_borrower_id, CURDATE(), p_return_date, FALSE);
-END //
+END 
 DELIMITER ;
 BorrowBook(1, 1, '2024-03-01');
 
