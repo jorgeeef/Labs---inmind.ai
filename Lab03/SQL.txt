@@ -1,0 +1,88 @@
+CREATE DATABASE LibraryDB;
+USE LibraryDB;
+
+CREATE TABLE Authors (
+    author_id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
+    birth_date DATE,
+    country VARCHAR(100)
+);
+
+CREATE TABLE Books (
+    book_id INT PRIMARY KEY AUTO_INCREMENT,
+    title VARCHAR(255) NOT NULL,
+    author_id INT,
+    isbn VARCHAR(20) UNIQUE,
+    published_year YEAR,
+    FOREIGN KEY (author_id) REFERENCES Authors(author_id) ON DELETE CASCADE
+);
+
+CREATE TABLE Borrowers (
+    borrower_id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    phone VARCHAR(15) UNIQUE
+);
+
+CREATE TABLE Loans (
+    loan_id INT PRIMARY KEY AUTO_INCREMENT,
+    book_id INT,
+    borrower_id INT,
+    loan_date DATE NOT NULL,
+    return_date DATE NOT NULL,
+    returned BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (book_id) REFERENCES Books(book_id) ON DELETE CASCADE,
+    FOREIGN KEY (borrower_id) REFERENCES Borrowers(borrower_id) ON DELETE CASCADE
+);
+
+INSERT INTO Authors (name, birth_date, country) VALUES 
+('J.K. Rowling', '1965-07-31', 'UK'),
+('George Orwell', '1903-06-25', 'UK'),
+('Harper Lee', '1926-04-28', 'USA');
+INSERT INTO Books (title, author_id, isbn, published_year) VALUES 
+('Harry Potter', 1, '9780747532743', 1997),
+('1984', 2, '9780451524935', 1949),
+('To Kill a Mockingbird', 3, '9780061120084', 1960);
+INSERT INTO Borrowers (name, email, phone) VALUES 
+('Alice Johnson', 'alice@email.com', '1234567890'),
+('Bob Smith', 'bob@email.com', '0987654321');
+INSERT INTO Loans (book_id, borrower_id, loan_date, return_date, returned) VALUES 
+(1, 1, '2024-01-01', '2024-01-15', FALSE),
+(2, 2, '2024-02-01', '2024-02-14', TRUE);
+
+SELECT * FROM Books WHERE published_year = 1997;
+
+SELECT * FROM Loans WHERE return_date < CURDATE() AND returned = FALSE;
+
+SELECT Books.* 
+FROM Books 
+JOIN Loans ON Books.book_id = Loans.book_id
+JOIN Borrowers ON Loans.borrower_id = Borrowers.borrower_id
+WHERE Borrowers.name = 'Alice Johnson';
+
+SELECT COUNT(*) FROM Books;
+
+CREATE VIEW PopularBooks AS
+SELECT Books.book_id, Books.title, COUNT(Loans.loan_id) AS total_loans
+FROM Books
+JOIN Loans ON Books.book_id = Loans.book_id
+GROUP BY Books.book_id, Books.title
+ORDER BY total_loans DESC;
+SELECT * FROM PopularBooks;
+
+DELIMITER //
+CREATE PROCEDURE BorrowBook(IN p_book_id INT, IN p_borrower_id INT, IN p_return_date DATE)
+BEGIN
+    INSERT INTO Loans (book_id, borrower_id, loan_date, return_date, returned)
+    VALUES (p_book_id, p_borrower_id, CURDATE(), p_return_date, FALSE);
+END //
+DELIMITER ;
+BorrowBook(1, 1, '2024-03-01');
+
+
+
+
+
+
+
+
