@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\CodeFirst-Approach.props" />
+</Project>
